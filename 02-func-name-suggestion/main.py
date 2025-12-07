@@ -39,6 +39,13 @@ def parse_args():
         '--model',
         default='Salesforce/codet5p-220m',
     )
+    predict_parser.add_argument(
+        '-t',
+        '--task',
+        type=int,
+        choices=[1, 2],
+        default=1
+    )
 
     return parser.parse_args()
 
@@ -50,7 +57,7 @@ def prepare_data(args):
 
 def predict_names(args):
     dataset = load_dataset(args.dataset)
-    predict(dataset, args.model)
+    predict(dataset, args.model, args.task)
 
 
 if __name__ == '__main__':
