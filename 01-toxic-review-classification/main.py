@@ -1,8 +1,9 @@
 import argparse
 from pathlib import Path
 
-from cmnt_clf.data import load_dataset, prepare, save_dataset
-from cmnt_clf.models import classifier
+from toxic_clf.data import load_dataset, prepare, save_dataset
+from toxic_clf.models import classifier
+from toxic_clf.models import run_codebert
 
 
 def main():
@@ -18,33 +19,47 @@ def parse_args():
     prepare_data_parser = subparsers.add_parser('prepare-data')
     prepare_data_parser.set_defaults(func=prepare_data)
     prepare_data_parser.add_argument(
-        'input',
-        help='Path to load raw dataset',
-        type=Path,
-    )
+            '--input',
+            help='Path to load raw dataset',
+            type=Path,
+            )
     prepare_data_parser.add_argument(
-        '-o',
-        '--output',
-        help='Path to save prepared dataset to',
-        type=Path,
-        default=default_data_path,
-    )
+            '-o',
+            '--output',
+            help='Path to save prepared dataset to',
+            type=Path,
+            default=default_data_path,
+            )
 
     predict_parser = subparsers.add_parser('classify')
     predict_parser.set_defaults(func=classify)
     predict_parser.add_argument(
-        '-d',
-        '--dataset',
-        help='Path to prepared dataset',
-        type=Path,
-        default=default_data_path,
-    )
+            '-d',
+            '--dataset',
+            help='Path to prepared dataset',
+            type=Path,
+            default=default_data_path,
+            )
     predict_parser.add_argument(
-        '-m',
-        '--model',
-        choices=['classic_ml', 'microsoft/codebert-base'],
-        default='classic_ml',
-    )
+            '-m',
+            '--model',
+            choices=['classic_ml', 'microsoft/codebert-base'],
+            default='classic_ml',
+            )
+
+    codebert_parser = subparsers.add_parser('train-codebert')
+    codebert_parser.set_defaults(func=train_codebert)
+    codebert_parser.add_argument(
+            '-d', '--dataset',
+            help='Path to prepared dataset',
+            type=Path,
+            default=default_data_path
+            )
+    codebert_parser.add_argument(
+            '-m', '--model',
+            choices=['microsoft/codebert-base', 'roberta-base'],
+            default='microsoft/codebert-base'
+            )
 
     return parser.parse_args()
 
@@ -57,6 +72,9 @@ def prepare_data(args):
 def classify(args):
     dataset = load_dataset(args.dataset)
     classifier(dataset, args.model)
+
+def train_codebert(args):
+    run_codebert(args.dataset, args.model)
 
 
 if __name__ == '__main__':
